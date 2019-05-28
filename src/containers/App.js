@@ -3,29 +3,23 @@ import CardList from '../components/CardList';
 import SearchBox from '../components/SearchBox';
 import Scroll from '../components/Scroll';
 import ErrorBoundry from '../components/ErrorBoundry';
-import { setSearchField } from '../store/actions';
+import { setSearchField, requestRobots } from '../store/actions';
 import { connect } from 'react-redux';
 
 import './App.css';
 
 class App extends React.Component {
-  state = {
-    robots: [],
-  };
 
-  componentDidMount= async () => {
-    const data = await fetch('https://jsonplaceholder.typicode.com/users');
-    const json = await data.json();
-    this.setState({ robots: json });
+  componentDidMount() {
+    this.props.onRequestRobots();
   }
 
   render() {
-    const { robots } = this.state;
-    const { searchField, onSearchChange } = this.props;
+    const { searchField, onSearchChange, robots, isPending } = this.props;
     const filteredRobots = robots.filter(robot => {
       return robot.name.toLowerCase().includes(searchField.toLowerCase());
     });
-    return !robots.length ?
+    return isPending ?
       <h1 className='tc'>Loading</h1> :
     (
       <div className="tc">
@@ -43,13 +37,17 @@ class App extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    searchField: state.searchField
+    searchField: state.searchRobots.searchField,
+    robots: state.requestRobots.robots,
+    isPending: state.requestRobots.isPending,
+    error: state.requestRobots.error
   }
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    onSearchChange: (event) => dispatch(setSearchField(event.target.value))
+    onSearchChange: (event) => dispatch(setSearchField(event.target.value)),
+    onRequestRobots: () => dispatch(requestRobots)
   }
  };
 
